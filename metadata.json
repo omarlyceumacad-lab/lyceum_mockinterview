@@ -1,0 +1,5 @@
+{
+  "name": "AI Interview Assessor",
+  "description": "An AI-powered tool for interviewers to assess a candidate's performance. The interviewer scores the candidate on key metrics like fluency and body language, and the AI generates a comprehensive feedback report that can be shared with the candidate.",
+  "requestFramePermissions": []
+}
