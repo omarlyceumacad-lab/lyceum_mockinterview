@@ -1,8 +1,8 @@
 
 import { Scores, FeedbackData, InterviewDetails } from "../types";
 
-// This is the relative path to our Netlify Function
-const API_ENDPOINT = '/.netlify/functions/generate-feedback';
+// This is the relative path to our Vercel API Route
+const API_ENDPOINT = '/api/generate-feedback';
 
 export const generateFeedback = async (scores: Scores[], details: InterviewDetails): Promise<FeedbackData> => {
   const response = await fetch(API_ENDPOINT, {
