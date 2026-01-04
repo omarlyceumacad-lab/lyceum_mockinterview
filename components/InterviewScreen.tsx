@@ -7,7 +7,7 @@ interface InterviewScreenProps {
   onComplete: (result: AssessmentResult) => void;
   apiError: string | null;
   questions: string[];
-  setQuestions: (value: string[] | ((val: string[]) => string[])) => void;
+  onAddCustomQuestion: (question: string) => void;
 }
 
 const ScoreSlider: React.FC<{ label: string; value: number; onChange: (value: number) => void }> = ({ label, value, onChange }) => (
@@ -28,7 +28,7 @@ const ScoreSlider: React.FC<{ label: string; value: number; onChange: (value: nu
 );
 
 
-const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onComplete, apiError, questions, setQuestions }) => {
+const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onComplete, apiError, questions, onAddCustomQuestion }) => {
   const [scores, setScores] = useState<Scores[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [decision, setDecision] = useState<HiringDecision>(HiringDecision.Pending);
@@ -50,9 +50,7 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
     
     setScores(prevScores => [...prevScores, newScore]);
     
-    if (!questions.includes(trimmedQuestion)) {
-        setQuestions(prev => [...prev, trimmedQuestion]);
-    }
+    onAddCustomQuestion(trimmedQuestion);
 
     setCurrentQuestion('');
     setCurrentScores({ fluency: 5, facialExpressions: 5, bodyLanguage: 5, context: 5 });

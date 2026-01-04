@@ -6,10 +6,9 @@ import InterviewScreen from './components/InterviewScreen';
 import LoadingScreen from './components/LoadingScreen';
 import FeedbackReport from './components/FeedbackReport';
 import HistoryScreen from './components/HistoryScreen';
-import { generateFeedback, getHistory, deleteAssessment, getSessionCount } from './services/geminiService';
+import { generateFeedback, getHistory, deleteAssessment, getSessionCount, getCustomQuestions, addCustomQuestion } from './services/geminiService';
 import { AppState, FeedbackData, InterviewDetails, AssessmentResult, AssessmentHistoryEntry } from './types';
 import { INTERVIEW_QUESTIONS } from './constants';
-import { useLocalStorage } from './hooks/useLocalStorage';
 import { generateSerialNumber } from './utils/serialNumber';
 
 const App: React.FC = () => {
@@ -18,23 +17,32 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   
-  const [questions, setQuestions] = useLocalStorage<string[]>('interviewQuestions', INTERVIEW_QUESTIONS.map(q => q.question));
+  const [questions, setQuestions] = useState<string[]>(INTERVIEW_QUESTIONS.map(q => q.question));
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistoryEntry[]>([]);
 
   useEffect(() => {
-    const loadHistory = async () => {
+    const loadInitialData = async () => {
         try {
             setIsHistoryLoading(true);
-            const history = await getHistory();
+            const [history, customQuestions] = await Promise.all([
+                getHistory(),
+                getCustomQuestions()
+            ]);
             setAssessmentHistory(history);
+
+            // Combine default questions with custom questions from DB and remove duplicates
+            const allQuestions = [...INTERVIEW_QUESTIONS.map(q => q.question), ...customQuestions];
+            const uniqueQuestions = [...new Set(allQuestions)];
+            setQuestions(uniqueQuestions);
+
         } catch (e) {
-            console.error("Failed to load history:", e);
-            setError("Could not load assessment history from the database.");
+            console.error("Failed to load initial data:", e);
+            setError("Could not load assessment history or custom questions from the database.");
         } finally {
             setIsHistoryLoading(false);
         }
     };
-    loadHistory();
+    loadInitialData();
   }, []);
 
   const handleStartSetup = () => {
@@ -112,6 +120,24 @@ const App: React.FC = () => {
     }
   }, [selectedFeedback]);
   
+  const handleAddCustomQuestion = useCallback(async (newQuestion: string) => {
+    const trimmedQuestion = newQuestion.trim();
+    // Check if question is valid and not already in the list
+    if (trimmedQuestion && !questions.includes(trimmedQuestion)) {
+        // Optimistically update the UI state
+        setQuestions(prev => [...prev, trimmedQuestion]);
+        try {
+            // Persist the new question to the database
+            await addCustomQuestion(trimmedQuestion);
+        } catch (e) {
+            console.error("Failed to save new question:", e);
+            // If the API call fails, revert the state change to keep UI consistent with the database
+            setQuestions(prev => prev.filter(q => q !== trimmedQuestion));
+            setError("Could not save the new question. Please try again.");
+        }
+    }
+  }, [questions]);
+
   const handleBackToHistory = () => {
     setSelectedFeedback(null);
     setError(null);
@@ -151,7 +177,7 @@ const App: React.FC = () => {
             onComplete={handleAssessmentComplete}
             apiError={error}
             questions={questions}
-            setQuestions={setQuestions}
+            onAddCustomQuestion={handleAddCustomQuestion}
           />
         );
       case AppState.Assessing:

@@ -5,6 +5,8 @@ const GENERATE_FEEDBACK_ENDPOINT = '/api/generate-feedback';
 const HISTORY_ENDPOINT = '/api/history';
 const DELETE_ASSESSMENT_ENDPOINT = '/api/delete-assessment';
 const GET_SESSION_COUNT_ENDPOINT = '/api/get-session-count';
+const GET_QUESTIONS_ENDPOINT = '/api/get-questions';
+const ADD_QUESTION_ENDPOINT = '/api/add-question';
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -63,4 +65,20 @@ export const deleteAssessment = async (id: string): Promise<{ message: string }>
 export const getSessionCount = async (referenceNumber: string): Promise<{ count: number }> => {
     const response = await fetch(`${GET_SESSION_COUNT_ENDPOINT}?referenceNumber=${encodeURIComponent(referenceNumber)}`);
     return handleResponse<{ count: number }>(response);
+};
+
+export const getCustomQuestions = async (): Promise<string[]> => {
+    const response = await fetch(GET_QUESTIONS_ENDPOINT);
+    return handleResponse<string[]>(response);
+};
+
+export const addCustomQuestion = async (question: string): Promise<{ message: string }> => {
+    const response = await fetch(ADD_QUESTION_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question }),
+    });
+    return handleResponse<{ message: string }>(response);
 };
