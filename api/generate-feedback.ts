@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { supabase } from './_lib/supabaseClient';
+import { supabase } from './_lib/supabaseClient.js';
 
 // Types copied from the main app to make the function self-contained
 enum HiringDecision {
