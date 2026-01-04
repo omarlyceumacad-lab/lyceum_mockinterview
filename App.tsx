@@ -1,13 +1,12 @@
 
-
 // FIX: Import useState and useCallback from React to fix 'Cannot find name' errors and correct a syntax error in the import statement.
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import SetupScreen from './components/SetupScreen';
 import InterviewScreen from './components/InterviewScreen';
 import LoadingScreen from './components/LoadingScreen';
 import FeedbackReport from './components/FeedbackReport';
 import HistoryScreen from './components/HistoryScreen';
-import { generateFeedback } from './services/geminiService';
+import { generateFeedback, getHistory } from './services/geminiService';
 import { AppState, FeedbackData, InterviewDetails, AssessmentResult, AssessmentHistoryEntry } from './types';
 import { INTERVIEW_QUESTIONS } from './constants';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -17,9 +16,26 @@ const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.History);
   const [selectedFeedback, setSelectedFeedback] = useState<FeedbackData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   
   const [questions, setQuestions] = useLocalStorage<string[]>('interviewQuestions', INTERVIEW_QUESTIONS.map(q => q.question));
-  const [assessmentHistory, setAssessmentHistory] = useLocalStorage<AssessmentHistoryEntry[]>('assessmentHistory', []);
+  const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistoryEntry[]>([]);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+        try {
+            setIsHistoryLoading(true);
+            const history = await getHistory();
+            setAssessmentHistory(history);
+        } catch (e) {
+            console.error("Failed to load history:", e);
+            setError("Could not load assessment history from the database.");
+        } finally {
+            setIsHistoryLoading(false);
+        }
+    };
+    loadHistory();
+  }, []);
 
   const handleStartSetup = () => {
     setSelectedFeedback(null);
@@ -66,6 +82,7 @@ const App: React.FC = () => {
         feedbackData: generatedFeedback,
       };
 
+      // Optimistically update UI
       setAssessmentHistory(prev => [newHistoryEntry, ...prev]);
       setSelectedFeedback(generatedFeedback);
       setAppState(AppState.Feedback);
@@ -74,7 +91,7 @@ const App: React.FC = () => {
       setError('Sorry, there was an error generating feedback. Please try again.');
       setAppState(AppState.Interview); 
     }
-  }, [selectedFeedback, setAssessmentHistory]);
+  }, [selectedFeedback]);
   
   const handleBackToHistory = () => {
     setSelectedFeedback(null);
@@ -83,6 +100,10 @@ const App: React.FC = () => {
   }
 
   const renderContent = () => {
+    if (isHistoryLoading && appState === AppState.History) {
+      return <LoadingScreen />;
+    }
+
     switch (appState) {
       case AppState.History:
         return <HistoryScreen history={assessmentHistory} onStart={handleStartSetup} onView={handleViewHistory} />;

@@ -1,11 +1,39 @@
 
-import { Scores, FeedbackData, InterviewDetails } from "../types";
+import { Scores, FeedbackData, InterviewDetails, AssessmentHistoryEntry } from "../types";
 
-// This is the relative path to our Vercel API Route
-const API_ENDPOINT = '/api/generate-feedback';
+const GENERATE_FEEDBACK_ENDPOINT = '/api/generate-feedback';
+const HISTORY_ENDPOINT = '/api/history';
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+    try {
+      const errorBody = await response.json();
+      errorMessage = errorBody.error || JSON.stringify(errorBody);
+    } catch (e) {
+      // Response was not JSON, which can happen on a server crash
+      const textError = await response.text();
+      if (textError.includes('INTERNAL_SERVER_ERROR') || textError.includes('NOT_FOUND') || response.status === 500) {
+          errorMessage = "The API endpoint is not working correctly. Please check the server logs on Vercel for more details. This is often caused by missing environment variables.";
+      } else if (textError) {
+          errorMessage = textError;
+      }
+    }
+    console.error("API Function Error:", errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  try {
+    return await response.json() as T;
+  } catch (error) {
+    console.error("Failed to parse JSON response from function:", error);
+    throw new Error("The server returned an invalid response format.");
+  }
+}
+
 
 export const generateFeedback = async (scores: Scores[], details: InterviewDetails): Promise<FeedbackData> => {
-  const response = await fetch(API_ENDPOINT, {
+  const response = await fetch(GENERATE_FEEDBACK_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -13,20 +41,10 @@ export const generateFeedback = async (scores: Scores[], details: InterviewDetai
     body: JSON.stringify({ scores, details }),
   });
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ error: "An unknown server error occurred." }));
-    console.error("API Function Error:", errorBody);
-    throw new Error(errorBody.error || "Failed to get feedback from the server.");
-  }
-  
-  // The Gemini response is a string that needs to be parsed into JSON.
-  // Our function now forwards this string directly.
-  try {
-    const responseText = await response.text();
-    const feedbackData: FeedbackData = JSON.parse(responseText);
-    return feedbackData;
-  } catch (error) {
-     console.error("Failed to parse JSON response from function:", error);
-    throw new Error("The server returned an invalid response format.");
-  }
+  return handleResponse<FeedbackData>(response);
 };
+
+export const getHistory = async (): Promise<AssessmentHistoryEntry[]> => {
+    const response = await fetch(HISTORY_ENDPOINT);
+    return handleResponse<AssessmentHistoryEntry[]>(response);
+}

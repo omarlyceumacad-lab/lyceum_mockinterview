@@ -1,6 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { supabase } from './_lib/supabaseClient';
 
 // Types copied from the main app to make the function self-contained
 enum HiringDecision {
@@ -164,6 +165,25 @@ export default async function handler(
     const responseText = response.text;
     if (!responseText) {
       throw new Error("Received an empty response from the AI.");
+    }
+    
+    // After getting feedback, save the entire record to the Supabase database
+    const feedbackData = JSON.parse(responseText);
+    
+    const { error: insertError } = await supabase
+      .from('assessments')
+      .insert({
+        id: details.id,
+        interview_details: details,
+        feedback_data: feedbackData
+      });
+
+    if (insertError) {
+      // Log the error but still send feedback to the user
+      console.error("Supabase insert error:", insertError);
+      // In a production app, you might want to handle this more gracefully
+      // For now, we will throw it so the client knows the save failed.
+      throw new Error(`Failed to save assessment to database: ${insertError.message}`);
     }
     
     res.setHeader('Content-Type', 'application/json');
