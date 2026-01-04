@@ -80,7 +80,7 @@ const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: 
                         <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Session #:</strong> {interviewDetails.sessionNumber}</p></div>
                         <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Visa Type:</strong> {interviewDetails.course}</p></div>
                         <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Scheduled Date:</strong> {interviewDetails.date}</p></div>
-                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Assessment Time:</strong> {interviewDetails.time}</p></div>
+                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Assessment:</strong> {interviewDetails.assessmentDateTime}</p></div>
                         <div className={`col-span-3 font-bold p-3 rounded-lg text-center text-lg ${isApproved ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}><strong>Mock Decision:</strong> {interviewDetails.decision}</div>
                     </div>
 
@@ -100,8 +100,11 @@ const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: 
                                 <div className="grid grid-cols-4 gap-2 text-center mb-3 text-sm">
                                     {Object.entries(scoreLabels).map(([key, label]) => (
                                         <div key={key} className="bg-gray-100 p-2 rounded">
-                                            <div className="font-semibold text-gray-600">{label}</div>
-                                            <div className="text-2xl font-bold text-indigo-700">{item.scores[key as keyof ScoreParameters]}<span className="text-sm text-gray-500">/10</span></div>
+                                            <div className="font-semibold text-gray-600 text-xs">{label}</div>
+                                            <div className="flex items-baseline justify-center font-mono text-indigo-700">
+                                                <span className="text-2xl font-bold">{item.scores[key as keyof ScoreParameters]}</span>
+                                                <span className="text-sm font-semibold">/10</span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -122,10 +125,19 @@ const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: 
                     </div>
                 </div>
 
-                {/* Interviewer Details & Stamp */}
-                <div className="flex justify-between items-end mt-12 pt-4 text-sm text-gray-800">
-                     {/* Terms and Conditions */}
-                    <div className="text-xs w-2/3">
+                <div className="mt-auto pt-8">
+                    {/* Interviewer Details & Stamp */}
+                    <div className="text-right mb-8">
+                        <p className="font-bold text-sm mb-2">Interviewer:</p>
+                        <img src={stampImage} alt="Academic Director Stamp" className="inline-block mb-2" style={{ width: '120px' }} />
+                        <p className="font-bold text-sm">Mohammed Omar,</p>
+                        <p className="text-sm">MBA, DHR</p>
+                        <p className="text-sm">Academic Director,</p>
+                        <p className="text-sm">Lyceum Academy</p>
+                    </div>
+
+                    {/* Terms and Conditions */}
+                    <div className="text-xs w-full">
                         <h4 className="font-bold text-sm mb-2 text-gray-800">Terms & Conditions</h4>
                         <div className="text-gray-600 space-y-1">
                             <p className="font-semibold">3 TERMS FOR USA APPLICATIONS</p>
@@ -138,14 +150,8 @@ const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: 
                             </ul>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <img src={stampImage} alt="Academic Director Stamp" className="inline-block mb-2" style={{ width: '120px' }} />
-                        <p className="font-bold">Mohammed Omar,</p>
-                        <p>MBA, DHR</p>
-                        <p>Academic Director,</p>
-                        <p>Lyceum Academy</p>
-                    </div>
                 </div>
+
 
                 {/* Footer */}
                 <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-300 mt-6">

@@ -43,7 +43,7 @@ const App: React.FC = () => {
     setAppState(AppState.Setup);
   };
 
-  const handleStartAssessment = async (details: Omit<InterviewDetails, 'id' | 'sessionNumber' | 'time'>) => {
+  const handleStartAssessment = async (details: Omit<InterviewDetails, 'id' | 'sessionNumber'>) => {
     setAppState(AppState.Assessing);
     setError(null);
     try {
@@ -57,7 +57,6 @@ const App: React.FC = () => {
             ...details,
             id: generateSerialNumber(),
             sessionNumber: sessionCount + 1,
-            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
         };
         
         setSelectedFeedback({

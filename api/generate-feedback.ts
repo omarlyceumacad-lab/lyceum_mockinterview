@@ -14,10 +14,10 @@ interface InterviewDetails {
     id: string;
     name: string;
     course: string;
-    date: string;
+    date: string; // Scheduled Date
     referenceNumber?: string;
     sessionNumber?: number;
-    time?: string;
+    assessmentDateTime: string;
     decision?: HiringDecision;
 }
 
@@ -51,7 +51,7 @@ const feedbackSchema = {
                 date: { type: Type.STRING },
                 referenceNumber: { type: Type.STRING },
                 sessionNumber: { type: Type.NUMBER },
-                time: { type: Type.STRING },
+                assessmentDateTime: { type: Type.STRING },
                 decision: { type: Type.STRING },
              }
         },
@@ -115,7 +115,8 @@ Scores:
     - Reference Number: ${details.referenceNumber}
     - Session Number: ${details.sessionNumber}
     - Visa Type Applied For: ${details.course}
-    - Interview Date: ${details.date}
+    - Scheduled Interview Date: ${details.date}
+    - Assessment Date & Time: ${details.assessmentDateTime}
     - Assessment ID: ${details.id}
     - Mock Interview Outcome: ${details.decision}
 

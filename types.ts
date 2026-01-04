@@ -17,10 +17,10 @@ export interface InterviewDetails {
     id: string; // Unique serial number for the assessment
     name: string;
     course: string; // Will represent visa type (e.g., F-1 Student, B-2 Visitor)
-    date: string;
+    date: string; // Scheduled Date
     referenceNumber?: string;
     sessionNumber?: number;
-    time?: string;
+    assessmentDateTime: string;
     decision?: HiringDecision;
 }
 

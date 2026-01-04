@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InterviewDetails } from '../types';
 
 interface SetupScreenProps {
-  onStart: (details: Omit<InterviewDetails, 'id' | 'sessionNumber' | 'time'>) => void;
+  onStart: (details: Omit<InterviewDetails, 'id' | 'sessionNumber'>) => void;
   onBack: () => void;
 }
 
@@ -13,8 +13,32 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
   const [visaType, setVisaType] = useState('F1');
   const [studentCourse, setStudentCourse] = useState('');
   const [otherVisaType, setOtherVisaType] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [scheduledDate, setScheduledDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDateScheduled, setIsDateScheduled] = useState(true);
+  const [assessmentDate, setAssessmentDate] = useState('');
+  const [assessmentTime, setAssessmentTime] = useState('');
+
+  useEffect(() => {
+    const now = new Date();
+    // 'en-CA' format is YYYY-MM-DD which is required for input type="date"
+    const date = new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'Asia/Kolkata'
+    }).format(now);
+    // 'en-GB' format is HH:mm which is required for input type="time"
+    const time = new Intl.DateTimeFormat('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Kolkata'
+    }).format(now);
+    
+    setAssessmentDate(date);
+    setAssessmentTime(time);
+  }, []);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,12 +48,24 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
     } else if (visaType === 'Others') {
         finalCourse = otherVisaType || 'Other';
     }
+
+    const dateObj = new Date(`${assessmentDate}T${assessmentTime}:00`);
+    const formattedDateTime = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Kolkata' // Ensure formatting reflects the intended timezone
+    }).format(dateObj);
     
     const finalDetails = {
         name,
         referenceNumber,
         course: finalCourse,
-        date: isDateScheduled ? date : 'Not Scheduled'
+        date: isDateScheduled ? scheduledDate : 'Not Scheduled',
+        assessmentDateTime: formattedDateTime
     };
 
     onStart(finalDetails);
@@ -40,7 +76,9 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
     !referenceNumber.trim() ||
     (visaType === 'F1' && !studentCourse.trim()) || 
     (visaType === 'Others' && !otherVisaType.trim()) || 
-    (isDateScheduled && !date);
+    (isDateScheduled && !scheduledDate) ||
+    !assessmentDate ||
+    !assessmentTime;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh]">
@@ -141,17 +179,48 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
               />
             </div>
           )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label htmlFor="assessmentDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Assessment Date
+                </label>
+                <input
+                    type="date"
+                    id="assessmentDate"
+                    name="assessmentDate"
+                    value={assessmentDate}
+                    onChange={(e) => setAssessmentDate(e.target.value)}
+                    required
+                    className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </div>
+            <div>
+                <label htmlFor="assessmentTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Assessment Time
+                </label>
+                <input
+                    type="time"
+                    id="assessmentTime"
+                    name="assessmentTime"
+                    value={assessmentTime}
+                    onChange={(e) => setAssessmentTime(e.target.value)}
+                    required
+                    className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </div>
+          </div>
           
           <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Interview Date
+            <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Scheduled Interview Date
             </label>
             <input
               type="date"
-              id="date"
-              name="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              id="scheduledDate"
+              name="scheduledDate"
+              value={scheduledDate}
+              onChange={(e) => setScheduledDate(e.target.value)}
               required
               disabled={!isDateScheduled}
               className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-200 disabled:dark:bg-gray-800 disabled:cursor-not-allowed"
