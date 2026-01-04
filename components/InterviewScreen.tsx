@@ -51,7 +51,11 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
     
     setScores(prevScores => [...prevScores, newScore]);
     
-    onAddCustomQuestion(trimmedQuestion);
+    // Check if the question is a new custom question before adding
+    const isExisting = questions.some(group => group.questions.includes(trimmedQuestion));
+    if (!isExisting) {
+        onAddCustomQuestion(trimmedQuestion);
+    }
 
     setCurrentQuestion('');
     setCurrentScores({ fluency: 3, facialExpressions: 3, bodyLanguage: 3, context: 3 });

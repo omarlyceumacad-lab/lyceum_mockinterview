@@ -20,19 +20,19 @@ const ScoreDisplay: React.FC<{ scores: ScoreParameters }> = ({ scores }) => (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 bg-gray-100 dark:bg-gray-700 p-4 rounded-md">
         <div className="text-center">
             <div className="text-sm text-gray-500 dark:text-gray-400">Fluency</div>
-            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.fluency}/10</div>
+            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.fluency}/5</div>
         </div>
         <div className="text-center">
             <div className="text-sm text-gray-500 dark:text-gray-400">Expressions</div>
-            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.facialExpressions}/10</div>
+            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.facialExpressions}/5</div>
         </div>
         <div className="text-center">
             <div className="text-sm text-gray-500 dark:text-gray-400">Body Language</div>
-            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.bodyLanguage}/10</div>
+            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.bodyLanguage}/5</div>
         </div>
         <div className="text-center">
             <div className="text-sm text-gray-500 dark:text-gray-400">Credibility</div>
-            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.context}/10</div>
+            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{scores.context}/5</div>
         </div>
     </div>
 );
@@ -103,7 +103,7 @@ const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: 
                                             <div className="font-semibold text-gray-600 text-xs">{label}</div>
                                             <div className="flex items-baseline justify-center font-mono text-indigo-700">
                                                 <span className="text-2xl font-bold">{item.scores[key as keyof ScoreParameters]}</span>
-                                                <span className="text-sm font-semibold">/10</span>
+                                                <span className="text-sm font-semibold">/5</span>
                                             </div>
                                         </div>
                                     ))}
