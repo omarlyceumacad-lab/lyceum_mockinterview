@@ -112,9 +112,19 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
               <ScoreSlider label="Context & Credibility" value={currentScores.context} onChange={(v) => setCurrentScores(s => ({...s, context: v}))} />
           </div>
 
+           <div className="mt-8 border-t dark:border-gray-700 pt-6 flex justify-end">
+            <button
+              onClick={handleAddQuestion}
+              disabled={isAddDisabled}
+              className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 font-bold py-3 px-6 rounded-lg text-lg hover:bg-indigo-200 dark:hover:bg-indigo-800 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition-all disabled:bg-gray-200 disabled:dark:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              Add Question
+            </button>
+          </div>
+
           <div className="mt-8 border-t dark:border-gray-700 pt-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Final Visa Decision</h3>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-8">
                 <label className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors w-1/2 ${decision === HiringDecision.Approved ? 'bg-green-100 dark:bg-green-900 border-green-500' : 'bg-gray-100 dark:bg-gray-700 border-transparent'} border-2`}>
                     <input type="radio" name="decision" value={HiringDecision.Approved} checked={decision === HiringDecision.Approved} onChange={() => setDecision(HiringDecision.Approved)} className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300" />
                     <span className="ml-3 font-medium text-green-800 dark:text-green-300">Approved</span>
@@ -124,24 +134,15 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
                     <span className="ml-3 font-medium text-red-800 dark:text-red-300">Refused</span>
                 </label>
             </div>
-          </div>
-
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-end">
-            <button
-              onClick={handleAddQuestion}
-              disabled={isAddDisabled}
-              className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 font-bold py-3 px-6 rounded-lg text-lg hover:bg-indigo-200 dark:hover:bg-indigo-800 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition-all disabled:bg-gray-200 disabled:dark:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
-            >
-              Add Question
-            </button>
-            <button
-              onClick={handleFinish}
-              disabled={isFinishDisabled}
-              className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition-all transform hover:scale-105 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100"
-            >
-              Finish & Get Feedback
-            </button>
+             <div className="flex justify-end">
+                <button
+                onClick={handleFinish}
+                disabled={isFinishDisabled}
+                className="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 transition-all transform hover:scale-105 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:cursor-not-allowed disabled:scale-100"
+                >
+                Finish & Get Feedback
+                </button>
+            </div>
           </div>
         </div>
       </div>

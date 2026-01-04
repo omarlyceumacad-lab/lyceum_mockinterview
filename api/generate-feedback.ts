@@ -51,11 +51,11 @@ const feedbackSchema = {
         },
         overallSummary: {
             type: Type.STRING,
-            description: "A brief, encouraging paragraph summarizing the candidate's overall performance based on the provided scores and visa decision. Frame this from the perspective of a consular officer."
+            description: "A brief, encouraging paragraph summarizing the candidate's performance in the mock interview. It must start by stating that this is a mock interview for practice and is not a guarantee of a real visa outcome. The perspective should be that of a helpful visa interview trainer."
         },
         detailedFeedback: {
             type: Type.ARRAY,
-            description: "An array of detailed feedback for each question based on the scores.",
+            description: "An array of detailed feedback for each question based on the scores, from the perspective of a visa interview trainer.",
             items: {
                 type: Type.OBJECT,
                 properties: {
@@ -69,16 +69,16 @@ const feedbackSchema = {
                             context: { type: Type.NUMBER }
                         }
                     },
-                    strengths: { type: Type.STRING, description: "What the applicant did well, inferred from high scores (e.g., clearly stated purpose, strong ties)." },
-                    areasForImprovement: { type: Type.STRING, description: "Specific, actionable suggestions for improvement based on low scores (e.g., weak ties, unclear intentions)." },
-                    suggestions: { type: Type.STRING, description: "General tips for a visa interview related to the question and scores." }
+                    strengths: { type: Type.STRING, description: "What the applicant did well, from a trainer's perspective (e.g., 'You did an excellent job of...')." },
+                    areasForImprovement: { type: Type.STRING, description: "Specific, actionable suggestions for improvement based on low scores (e.g., 'You could strengthen your answer by...')." },
+                    suggestions: { type: Type.STRING, description: "General coaching tips for a visa interview related to the question and scores." }
                 },
                 required: ["question", "scores", "strengths", "areasForImprovement", "suggestions"]
             }
         },
         conclusion: {
             type: Type.STRING,
-            description: "A concluding statement, tailored to the visa decision. If approved, it should be a brief confirmation. If refused, it should be a polite, standard closing that encourages them to address the identified issues before reapplying."
+            description: "A concluding statement from the visa trainer's perspective, aligned with the mock interview outcome. It should offer final words of encouragement and reiterate that the feedback is for preparation purposes and not a prediction of the real interview result."
         }
     },
     required: ["interviewDetails", "overallSummary", "detailedFeedback", "conclusion"]
@@ -96,18 +96,20 @@ Scores:
     .join('\n\n---\n\n');
   
   const decisionText = details.decision === 'Approved' 
-    ? "The final decision is APPROVED. The feedback should be concise and confirm the positive aspects that led to this decision."
-    : "The final decision is REFUSED. The feedback must be constructive, polite, and professional. It should clearly explain the likely reasons for refusal based on the scores (e.g., failure to prove non-immigrant intent, inconsistent answers) and suggest what the applicant needs to work on, without giving false hope.";
+    ? "The mock interview outcome is 'Approved'. The feedback should be positive and reinforcing, highlighting what the applicant did well to achieve this result, while still offering minor tips for polishing their performance."
+    : "The mock interview outcome is 'Refused'. The feedback must be constructive, empathetic, and clear. It should explain the likely reasons for this outcome based on the scores (e.g., weak demonstration of non-immigrant intent, lack of confidence, inconsistent answers) and provide actionable suggestions for what the applicant needs to improve.";
 
   return `
-    You are an experienced U.S. Consular Officer conducting a mock visa interview. Your task is to provide official, constructive feedback based on scores given to a visa applicant. The primary goal of a visa interview is for the applicant to prove strong ties to their home country and demonstrate clear non-immigrant intent.
+    You are an expert visa interview trainer providing detailed feedback on a mock interview session. Your goal is to help the applicant improve their performance for their real U.S. visa interview.
+
+    **Important:** Your feedback must always clarify that this is a mock interview and the outcome is not a guarantee of their real visa result. This is a training exercise.
 
     Applicant Details:
     - Applicant Name: ${details.name}
     - Visa Type Applied For: ${details.course}
     - Interview Date: ${details.date}
     - Assessment ID: ${details.id}
-    - Final Decision: ${details.decision}
+    - Mock Interview Outcome: ${details.decision}
 
     ${decisionText}
 
@@ -121,12 +123,12 @@ Scores:
 
     ${scoresText}
 
-    Please provide a detailed analysis from the perspective of a consular officer. Address the feedback to the applicant, ${details.name}. 
-    1.  Start with an overall summary of their performance.
-    2.  For each question, analyze the scores. Highlight strengths (for high scores on credibility, ties, etc.) and identify specific areas for improvement (for low scores on context, confidence, etc.).
-    3.  Provide a concluding statement that aligns with the final visa decision.
-    
-    The tone of the entire response must be professional, direct, and appropriate for an official embassy communication.
+    Please provide a detailed analysis from the perspective of a visa interview coach. Address the feedback directly to the applicant, ${details.name}.
+    1.  **Overall Summary:** Start with a summary of their performance. **Crucially, begin this section by stating this was a mock interview and the feedback is for practice purposes, not a guarantee of a real visa.**
+    2.  **Detailed Feedback:** For each question, analyze the scores. Highlight strengths and identify specific, actionable areas for improvement.
+    3.  **Conclusion:** Provide a concluding statement that aligns with the mock interview outcome and offers final words of encouragement and advice. **Reiterate that this feedback is to help them prepare and is not a prediction of their actual interview outcome.**
+
+    The tone of the entire response must be professional, encouraging, and constructive, like a trainer helping a student succeed.
 
     Return the feedback in the specified JSON format.
   `;

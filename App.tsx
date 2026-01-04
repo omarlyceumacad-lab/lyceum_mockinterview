@@ -6,7 +6,7 @@ import InterviewScreen from './components/InterviewScreen';
 import LoadingScreen from './components/LoadingScreen';
 import FeedbackReport from './components/FeedbackReport';
 import HistoryScreen from './components/HistoryScreen';
-import { generateFeedback, getHistory } from './services/geminiService';
+import { generateFeedback, getHistory, deleteAssessment } from './services/geminiService';
 import { AppState, FeedbackData, InterviewDetails, AssessmentResult, AssessmentHistoryEntry } from './types';
 import { INTERVIEW_QUESTIONS } from './constants';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -99,6 +99,19 @@ const App: React.FC = () => {
     setAppState(AppState.History);
   }
 
+  const handleDeleteAssessment = useCallback(async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this assessment? This action cannot be undone.")) {
+        return;
+    }
+    try {
+        await deleteAssessment(id);
+        setAssessmentHistory(prev => prev.filter(entry => entry.id !== id));
+    } catch (e) {
+        console.error("Failed to delete assessment:", e);
+        setError("Could not delete the assessment. Please try again.");
+    }
+  }, []);
+
   const renderContent = () => {
     if (isHistoryLoading && appState === AppState.History) {
       return <LoadingScreen />;
@@ -106,7 +119,7 @@ const App: React.FC = () => {
 
     switch (appState) {
       case AppState.History:
-        return <HistoryScreen history={assessmentHistory} onStart={handleStartSetup} onView={handleViewHistory} />;
+        return <HistoryScreen history={assessmentHistory} onStart={handleStartSetup} onView={handleViewHistory} onDelete={handleDeleteAssessment} />;
       case AppState.Setup:
         return <SetupScreen onStart={handleStartAssessment} onBack={handleBackToHistory} />;
       case AppState.Interview:
@@ -133,7 +146,7 @@ const App: React.FC = () => {
             />
         ) : <LoadingScreen />;
       default:
-        return <HistoryScreen history={assessmentHistory} onStart={handleStartSetup} onView={handleViewHistory} />;
+        return <HistoryScreen history={assessmentHistory} onStart={handleStartSetup} onView={handleViewHistory} onDelete={handleDeleteAssessment} />;
     }
   };
 

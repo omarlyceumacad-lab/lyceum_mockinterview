@@ -8,34 +8,36 @@ interface SetupScreenProps {
 }
 
 const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
-  const [details, setDetails] = useState({
-    name: '',
-    course: '',
-    date: new Date().toISOString().split('T')[0],
-  });
+  const [name, setName] = useState('');
+  const [visaType, setVisaType] = useState('F1');
+  const [studentCourse, setStudentCourse] = useState('');
+  const [otherVisaType, setOtherVisaType] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isDateScheduled, setIsDateScheduled] = useState(true);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setDetails(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsDateScheduled(!e.target.checked);
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalDetails = {
-        ...details,
-        date: isDateScheduled ? details.date : 'Not Scheduled'
-    };
-    if (details.name.trim() && details.course.trim() && finalDetails.date) {
-      onStart(finalDetails);
+    let finalCourse = visaType;
+    if (visaType === 'F1') {
+        finalCourse = studentCourse ? `F1 - ${studentCourse}` : 'F1 Student';
+    } else if (visaType === 'Others') {
+        finalCourse = otherVisaType || 'Other';
     }
+    
+    const finalDetails = {
+        name,
+        course: finalCourse,
+        date: isDateScheduled ? date : 'Not Scheduled'
+    };
+
+    onStart(finalDetails);
   };
 
-  const isFormInvalid = !details.name.trim() || !details.course.trim() || (isDateScheduled && !details.date);
+  const isFormInvalid = 
+    !name.trim() || 
+    (visaType === 'F1' && !studentCourse.trim()) || 
+    (visaType === 'Others' && !otherVisaType.trim()) || 
+    (isDateScheduled && !date);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh]">
@@ -59,28 +61,67 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
               type="text"
               id="name"
               name="name"
-              value={details.name}
-              onChange={handleChange}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
               className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               placeholder="e.g., Jane Doe"
             />
           </div>
           <div>
-            <label htmlFor="course" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="visaType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Visa Type Applied For
             </label>
-            <input
-              type="text"
-              id="course"
-              name="course"
-              value={details.course}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="e.g., F-1 Student, B-2 Visitor"
-            />
+            <select
+              id="visaType"
+              name="visaType"
+              value={visaType}
+              onChange={(e) => setVisaType(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="F1">F1 - Student Visa</option>
+              <option value="B2">B2 - Visitor Visa</option>
+              <option value="F2">F2 - Dependent Visa</option>
+              <option value="Others">Others</option>
+            </select>
           </div>
+
+          {visaType === 'F1' && (
+            <div>
+              <label htmlFor="studentCourse" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Student Course
+              </label>
+              <input
+                type="text"
+                id="studentCourse"
+                name="studentCourse"
+                value={studentCourse}
+                onChange={(e) => setStudentCourse(e.target.value)}
+                required
+                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="e.g., MS in Computer Science"
+              />
+            </div>
+          )}
+
+          {visaType === 'Others' && (
+            <div>
+              <label htmlFor="otherVisaType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Specify Other Visa Type
+              </label>
+              <input
+                type="text"
+                id="otherVisaType"
+                name="otherVisaType"
+                value={otherVisaType}
+                onChange={(e) => setOtherVisaType(e.target.value)}
+                required
+                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="e.g., H1-B"
+              />
+            </div>
+          )}
+          
           <div>
             <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Interview Date
@@ -89,8 +130,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
               type="date"
               id="date"
               name="date"
-              value={details.date}
-              onChange={handleChange}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               required
               disabled={!isDateScheduled}
               className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-200 disabled:dark:bg-gray-800 disabled:cursor-not-allowed"
@@ -100,7 +141,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
                     id="not-scheduled"
                     name="not-scheduled"
                     type="checkbox"
-                    onChange={handleCheckboxChange}
+                    checked={!isDateScheduled}
+                    onChange={(e) => setIsDateScheduled(!e.target.checked)}
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <label htmlFor="not-scheduled" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
