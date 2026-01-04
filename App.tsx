@@ -121,19 +121,17 @@ const App: React.FC = () => {
   }, [selectedFeedback]);
   
   const handleAddCustomQuestion = useCallback(async (newQuestion: string) => {
+    setError(null); // Clear previous errors
     const trimmedQuestion = newQuestion.trim();
-    // Check if question is valid and not already in the list
     if (trimmedQuestion && !questions.includes(trimmedQuestion)) {
-        // Optimistically update the UI state
         setQuestions(prev => [...prev, trimmedQuestion]);
         try {
-            // Persist the new question to the database
             await addCustomQuestion(trimmedQuestion);
         } catch (e) {
             console.error("Failed to save new question:", e);
-            // If the API call fails, revert the state change to keep UI consistent with the database
             setQuestions(prev => prev.filter(q => q !== trimmedQuestion));
             setError("Could not save the new question. Please try again.");
+            setTimeout(() => setError(null), 5000); // Clear error after 5 seconds
         }
     }
   }, [questions]);
