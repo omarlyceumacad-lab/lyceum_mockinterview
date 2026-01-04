@@ -7,8 +7,8 @@ import LoadingScreen from './components/LoadingScreen';
 import FeedbackReport from './components/FeedbackReport';
 import HistoryScreen from './components/HistoryScreen';
 import { generateFeedback, getHistory, deleteAssessment, getSessionCount, getCustomQuestions, addCustomQuestion } from './services/geminiService';
-import { AppState, FeedbackData, InterviewDetails, AssessmentResult, AssessmentHistoryEntry } from './types';
-import { INTERVIEW_QUESTIONS } from './constants';
+import { AppState, FeedbackData, InterviewDetails, AssessmentResult, AssessmentHistoryEntry, CategorizedQuestionSet } from './types';
+import { CATEGORIZED_INTERVIEW_QUESTIONS } from './constants';
 import { generateSerialNumber } from './utils/serialNumber';
 
 const App: React.FC = () => {
@@ -17,23 +17,20 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   
-  const [questions, setQuestions] = useState<string[]>(INTERVIEW_QUESTIONS.map(q => q.question));
+  const [customQuestions, setCustomQuestions] = useState<string[]>([]);
+  const [categorizedQuestions, setCategorizedQuestions] = useState<CategorizedQuestionSet[]>([]);
   const [assessmentHistory, setAssessmentHistory] = useState<AssessmentHistoryEntry[]>([]);
 
   useEffect(() => {
     const loadInitialData = async () => {
         try {
             setIsHistoryLoading(true);
-            const [history, customQuestions] = await Promise.all([
+            const [history, dbCustomQuestions] = await Promise.all([
                 getHistory(),
                 getCustomQuestions()
             ]);
             setAssessmentHistory(history);
-
-            // Combine default questions with custom questions from DB and remove duplicates
-            const allQuestions = [...INTERVIEW_QUESTIONS.map(q => q.question), ...customQuestions];
-            const uniqueQuestions = [...new Set(allQuestions)];
-            setQuestions(uniqueQuestions);
+            setCustomQuestions(dbCustomQuestions);
 
         } catch (e) {
             console.error("Failed to load initial data:", e);
@@ -66,6 +63,22 @@ const App: React.FC = () => {
             id: generateSerialNumber(),
             sessionNumber: sessionCount + 1,
         };
+
+        // Determine visa type to filter questions
+        const visaTypeKey = newDetails.course.substring(0, 2).toUpperCase(); // F1, B2, F2
+        let questionsForVisa = CATEGORIZED_INTERVIEW_QUESTIONS[visaTypeKey] || [];
+        
+        const finalQuestionList: CategorizedQuestionSet[] = [
+            ...CATEGORIZED_INTERVIEW_QUESTIONS['Common'],
+            ...questionsForVisa
+        ];
+        
+        // Add custom questions as a separate category if they exist
+        if (customQuestions.length > 0) {
+            finalQuestionList.unshift({ category: 'Custom Questions', questions: customQuestions });
+        }
+        
+        setCategorizedQuestions(finalQuestionList);
         
         setSelectedFeedback({
             interviewDetails: newDetails,
@@ -101,7 +114,7 @@ const App: React.FC = () => {
     setAppState(AppState.Assessing);
 
     try {
-      const generatedFeedback = await generateFeedback(result.scores, finalDetails);
+      const generatedFeedback = await generateFeedback(result.scores, finalDetails, result.aiNote);
       
       const newHistoryEntry: AssessmentHistoryEntry = {
         id: finalDetails.id,
@@ -123,18 +136,18 @@ const App: React.FC = () => {
   const handleAddCustomQuestion = useCallback(async (newQuestion: string) => {
     setError(null); // Clear previous errors
     const trimmedQuestion = newQuestion.trim();
-    if (trimmedQuestion && !questions.includes(trimmedQuestion)) {
-        setQuestions(prev => [...prev, trimmedQuestion]);
+    if (trimmedQuestion && !customQuestions.includes(trimmedQuestion)) {
+        setCustomQuestions(prev => [...prev, trimmedQuestion]);
         try {
             await addCustomQuestion(trimmedQuestion);
         } catch (e) {
             console.error("Failed to save new question:", e);
-            setQuestions(prev => prev.filter(q => q !== trimmedQuestion));
+            setCustomQuestions(prev => prev.filter(q => q !== trimmedQuestion));
             setError("Could not save the new question. Please try again.");
             setTimeout(() => setError(null), 5000); // Clear error after 5 seconds
         }
     }
-  }, [questions]);
+  }, [customQuestions]);
 
   const handleBackToHistory = () => {
     setSelectedFeedback(null);
@@ -174,7 +187,7 @@ const App: React.FC = () => {
             interviewDetails={selectedFeedback.interviewDetails}
             onComplete={handleAssessmentComplete}
             apiError={error}
-            questions={questions}
+            questions={categorizedQuestions}
             onAddCustomQuestion={handleAddCustomQuestion}
           />
         );

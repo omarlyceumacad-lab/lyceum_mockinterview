@@ -43,6 +43,7 @@ export interface Scores extends ScoreParameters {
 export interface AssessmentResult {
     scores: Scores[];
     decision: HiringDecision;
+    aiNote?: string;
 }
 
 export interface DetailedFeedback {
@@ -64,4 +65,14 @@ export interface AssessmentHistoryEntry {
   id: string;
   interviewDetails: InterviewDetails;
   feedbackData: FeedbackData;
+}
+
+// New types for categorized questions
+export interface CategorizedQuestionSet {
+  category: string;
+  questions: string[];
+}
+
+export interface VisaQuestions {
+  [visaType: string]: CategorizedQuestionSet[];
 }

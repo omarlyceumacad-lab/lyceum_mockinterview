@@ -38,13 +38,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 
-export const generateFeedback = async (scores: Scores[], details: InterviewDetails): Promise<FeedbackData> => {
+export const generateFeedback = async (scores: Scores[], details: InterviewDetails, aiNote?: string): Promise<FeedbackData> => {
   const response = await fetch(GENERATE_FEEDBACK_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ scores, details }),
+    body: JSON.stringify({ scores, details, aiNote }),
   });
 
   return handleResponse<FeedbackData>(response);

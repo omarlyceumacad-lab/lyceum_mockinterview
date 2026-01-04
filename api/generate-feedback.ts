@@ -90,20 +90,30 @@ const feedbackSchema = {
     required: ["interviewDetails", "overallSummary", "detailedFeedback", "conclusion"]
 };
 
-const createPrompt = (scores: Scores[], details: InterviewDetails): string => {
+const createPrompt = (scores: Scores[], details: InterviewDetails, aiNote?: string): string => {
   const scoresText = scores
     .map((s, index) => `Question ${index + 1}: ${s.question}
 Scores:
-- Fluency & Confidence: ${s.fluency}/10
-- Facial Expressions & Eye Contact: ${s.facialExpressions}/10
-- Body Language & Poise: ${s.bodyLanguage}/10
-- Context & Credibility: ${s.context}/10`
+- Fluency & Confidence: ${s.fluency}/5
+- Facial Expressions & Eye Contact: ${s.facialExpressions}/5
+- Body Language & Poise: ${s.bodyLanguage}/5
+- Context & Credibility: ${s.context}/5`
     )
     .join('\n\n---\n\n');
   
   const decisionText = details.decision === 'Approved' 
     ? "The mock interview outcome is 'Approved'. The feedback should be positive and reinforcing, highlighting what the applicant did well to achieve this result, while still offering minor tips for polishing their performance."
     : "The mock interview outcome is 'Refused'. The feedback must be constructive, empathetic, and clear. It should explain the likely reasons for this outcome based on the scores (e.g., weak demonstration of non-immigrant intent, lack of confidence, inconsistent answers) and provide actionable suggestions for what the applicant needs to improve.";
+
+  const noteForAI = aiNote 
+    ? `
+    **Interviewer's Private Note for AI:**
+    Please use the following private context from the interviewer to shape your feedback. This note is for you (the AI) only and should NOT be repeated in the student's report.
+    ---
+    ${aiNote}
+    ---
+    `
+    : "";
 
   return `
     You are an expert visa interview trainer providing detailed feedback on a mock interview session. Your goal is to help the applicant improve their performance for their real U.S. visa interview.
@@ -120,13 +130,14 @@ Scores:
     - Assessment ID: ${details.id}
     - Mock Interview Outcome: ${details.decision}
 
+    ${noteForAI}
     ${decisionText}
 
-    The scores are on a scale of 1 to 10 for four parameters crucial for a visa interview:
-    - Fluency & Confidence: Clarity of speech, confidence, and straightforwardness. (1=Hesitant/Nervous, 10=Clear/Confident)
-    - Facial Expressions & Eye Contact: Appears trustworthy and engaging. (1=Avoidant/Anxious, 10=Trustworthy/Engaging)
-    - Body Language & Poise: Posture and gestures indicating calmness and honesty. (1=Fidgety/Closed-off, 10=Composed/Confident)
-    - Context & Credibility: Answer is directly relevant, credible, and demonstrates non-immigrant intent. (1=Irrelevant/Inconsistent, 10=Credible/Well-structured)
+    The scores are on a scale of 1 to 5 for four parameters crucial for a visa interview:
+    - Fluency & Confidence: Clarity of speech, confidence, and straightforwardness. (1=Hesitant/Nervous, 5=Clear/Confident)
+    - Facial Expressions & Eye Contact: Appears trustworthy and engaging. (1=Avoidant/Anxious, 5=Trustworthy/Engaging)
+    - Body Language & Poise: Posture and gestures indicating calmness and honesty. (1=Fidgety/Closed-off, 5=Composed/Confident)
+    - Context & Credibility: Answer is directly relevant, credible, and demonstrates non-immigrant intent. (1=Irrelevant/Inconsistent, 5=Credible/Well-structured)
 
     Here are the questions asked and the scores the applicant received:
 
@@ -155,13 +166,13 @@ export default async function handler(
   }
 
   try {
-    const { scores, details } = req.body;
+    const { scores, details, aiNote } = req.body;
 
     if (!scores || !details) {
         return res.status(400).json({ error: "Missing scores or details in request body." });
     }
 
-    const prompt = createPrompt(scores, details);
+    const prompt = createPrompt(scores, details, aiNote);
 
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview", 

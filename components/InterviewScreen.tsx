@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { Scores, ScoreParameters, HiringDecision, AssessmentResult, InterviewDetails } from '../types';
+import { Scores, ScoreParameters, HiringDecision, AssessmentResult, InterviewDetails, CategorizedQuestionSet } from '../types';
 
 interface InterviewScreenProps {
   interviewDetails: InterviewDetails;
   onComplete: (result: AssessmentResult) => void;
   apiError: string | null;
-  questions: string[];
+  questions: CategorizedQuestionSet[];
   onAddCustomQuestion: (question: string) => void;
 }
 
@@ -14,12 +14,12 @@ const ScoreSlider: React.FC<{ label: string; value: number; onChange: (value: nu
     <div className="mb-4">
         <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2 flex justify-between">
             <span>{label}</span>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400">{value} / 10</span>
+            <span className="font-bold text-indigo-600 dark:text-indigo-400">{value} / 5</span>
         </label>
         <input
             type="range"
             min="1"
-            max="10"
+            max="5"
             value={value}
             onChange={(e) => onChange(parseInt(e.target.value, 10))}
             className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
@@ -32,11 +32,12 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
   const [scores, setScores] = useState<Scores[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [decision, setDecision] = useState<HiringDecision>(HiringDecision.Pending);
+  const [aiNote, setAiNote] = useState('');
   const [currentScores, setCurrentScores] = useState<ScoreParameters>({
-      fluency: 5,
-      facialExpressions: 5,
-      bodyLanguage: 5,
-      context: 5,
+      fluency: 3,
+      facialExpressions: 3,
+      bodyLanguage: 3,
+      context: 3,
   });
 
   const handleAddQuestion = () => {
@@ -53,7 +54,7 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
     onAddCustomQuestion(trimmedQuestion);
 
     setCurrentQuestion('');
-    setCurrentScores({ fluency: 5, facialExpressions: 5, bodyLanguage: 5, context: 5 });
+    setCurrentScores({ fluency: 3, facialExpressions: 3, bodyLanguage: 3, context: 3 });
   };
   
   const handleFinish = () => {
@@ -61,7 +62,7 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
           alert("Please select a final decision (Approved/Refused) before finishing.");
           return;
       }
-      onComplete({ scores, decision });
+      onComplete({ scores, decision, aiNote });
   }
 
   const isAddDisabled = !currentQuestion.trim();
@@ -99,7 +100,11 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
                 className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
             />
             <datalist id="questions-datalist">
-                {questions.map((q, i) => <option key={i} value={q} />)}
+                {questions.map((group) => (
+                    <optgroup key={group.category} label={group.category}>
+                        {group.questions.map((q, i) => <option key={`${group.category}-${i}`} value={q} />)}
+                    </optgroup>
+                ))}
             </datalist>
           </div>
 
@@ -121,6 +126,20 @@ const InterviewScreen: React.FC<InterviewScreenProps> = ({ interviewDetails, onC
           </div>
 
           <div className="mt-8 border-t dark:border-gray-700 pt-6">
+            <div className="mb-6">
+                <label htmlFor="ai-note" className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
+                    Note for AI (Private)
+                </label>
+                <textarea
+                    id="ai-note"
+                    value={aiNote}
+                    onChange={(e) => setAiNote(e.target.value)}
+                    placeholder="Provide specific context for the AI. e.g., 'The applicant seemed nervous but knew the material well. Focus on encouraging them about their content knowledge while suggesting confidence-building exercises.' This note will not be shown to the student."
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                    rows={4}
+                />
+            </div>
+            
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-3">Final Visa Decision</h3>
             <div className="flex items-center gap-4 mb-8">
                 <label className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors w-1/2 ${decision === HiringDecision.Approved ? 'bg-green-100 dark:bg-green-900 border-green-500' : 'bg-gray-100 dark:bg-gray-700 border-transparent'} border-2`}>
