@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { InterviewDetails } from '../types';
 
 interface SetupScreenProps {
-  onStart: (details: Omit<InterviewDetails, 'id'>) => void;
+  onStart: (details: Omit<InterviewDetails, 'id' | 'sessionNumber' | 'time'>) => void;
   onBack: () => void;
 }
 
 const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
   const [name, setName] = useState('');
+  const [referenceNumber, setReferenceNumber] = useState('');
   const [visaType, setVisaType] = useState('F1');
   const [studentCourse, setStudentCourse] = useState('');
   const [otherVisaType, setOtherVisaType] = useState('');
@@ -26,6 +27,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
     
     const finalDetails = {
         name,
+        referenceNumber,
         course: finalCourse,
         date: isDateScheduled ? date : 'Not Scheduled'
     };
@@ -35,6 +37,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
 
   const isFormInvalid = 
     !name.trim() || 
+    !referenceNumber.trim() ||
     (visaType === 'F1' && !studentCourse.trim()) || 
     (visaType === 'Others' && !otherVisaType.trim()) || 
     (isDateScheduled && !date);
@@ -53,20 +56,37 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStart, onBack }) => {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Applicant Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="e.g., Jane Doe"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Applicant Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="e.g., Jane Doe"
+              />
+            </div>
+            <div>
+              <label htmlFor="referenceNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Reference Number
+              </label>
+              <input
+                type="text"
+                id="referenceNumber"
+                name="referenceNumber"
+                value={referenceNumber}
+                onChange={(e) => setReferenceNumber(e.target.value)}
+                required
+                className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="From your CRM"
+              />
+            </div>
           </div>
           <div>
             <label htmlFor="visaType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">

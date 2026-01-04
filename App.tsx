@@ -6,7 +6,7 @@ import InterviewScreen from './components/InterviewScreen';
 import LoadingScreen from './components/LoadingScreen';
 import FeedbackReport from './components/FeedbackReport';
 import HistoryScreen from './components/HistoryScreen';
-import { generateFeedback, getHistory, deleteAssessment } from './services/geminiService';
+import { generateFeedback, getHistory, deleteAssessment, getSessionCount } from './services/geminiService';
 import { AppState, FeedbackData, InterviewDetails, AssessmentResult, AssessmentHistoryEntry } from './types';
 import { INTERVIEW_QUESTIONS } from './constants';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -43,16 +43,36 @@ const App: React.FC = () => {
     setAppState(AppState.Setup);
   };
 
-  const handleStartAssessment = (details: InterviewDetails) => {
-    const newDetails = { ...details, id: generateSerialNumber() };
-    setSelectedFeedback({
-      interviewDetails: newDetails,
-      overallSummary: '',
-      detailedFeedback: [],
-      conclusion: ''
-    });
+  const handleStartAssessment = async (details: Omit<InterviewDetails, 'id' | 'sessionNumber' | 'time'>) => {
+    setAppState(AppState.Assessing);
     setError(null);
-    setAppState(AppState.Interview);
+    try {
+        let sessionCount = 0;
+        if (details.referenceNumber) {
+            const data = await getSessionCount(details.referenceNumber);
+            sessionCount = data.count;
+        }
+
+        const newDetails: InterviewDetails = {
+            ...details,
+            id: generateSerialNumber(),
+            sessionNumber: sessionCount + 1,
+            time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        };
+        
+        setSelectedFeedback({
+            interviewDetails: newDetails,
+            overallSummary: '',
+            detailedFeedback: [],
+            conclusion: ''
+        });
+        setAppState(AppState.Interview);
+
+    } catch (e) {
+        console.error("Failed to get session count:", e);
+        setError("Could not retrieve session count. Please try again.");
+        setAppState(AppState.Setup);
+    }
   };
   
   const handleViewHistory = (feedback: FeedbackData) => {
@@ -124,7 +144,7 @@ const App: React.FC = () => {
         return <SetupScreen onStart={handleStartAssessment} onBack={handleBackToHistory} />;
       case AppState.Interview:
         if (!selectedFeedback?.interviewDetails) {
-            return <LoadingScreen />;
+            return <LoadingScreen message="Preparing assessment..." />;
         }
         return (
           <InterviewScreen
@@ -136,7 +156,7 @@ const App: React.FC = () => {
           />
         );
       case AppState.Assessing:
-        return <LoadingScreen />;
+        return <LoadingScreen message="Generating AI Feedback Report..." />;
       case AppState.Feedback:
         return selectedFeedback ? (
             <FeedbackReport 

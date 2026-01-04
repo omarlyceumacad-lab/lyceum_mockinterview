@@ -4,6 +4,7 @@ import { Scores, FeedbackData, InterviewDetails, AssessmentHistoryEntry } from "
 const GENERATE_FEEDBACK_ENDPOINT = '/api/generate-feedback';
 const HISTORY_ENDPOINT = '/api/history';
 const DELETE_ASSESSMENT_ENDPOINT = '/api/delete-assessment';
+const GET_SESSION_COUNT_ENDPOINT = '/api/get-session-count';
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -57,4 +58,9 @@ export const deleteAssessment = async (id: string): Promise<{ message: string }>
         method: 'DELETE',
     });
     return handleResponse<{ message: string }>(response);
+};
+
+export const getSessionCount = async (referenceNumber: string): Promise<{ count: number }> => {
+    const response = await fetch(`${GET_SESSION_COUNT_ENDPOINT}?referenceNumber=${encodeURIComponent(referenceNumber)}`);
+    return handleResponse<{ count: number }>(response);
 };

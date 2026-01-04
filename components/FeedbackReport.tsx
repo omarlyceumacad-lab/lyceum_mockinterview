@@ -1,7 +1,6 @@
 
 import React, { useRef } from 'react';
 import { FeedbackData, ScoreParameters, InterviewDetails, HiringDecision } from '../types';
-// FIX: Import stamp image to be used in the printable report.
 import { stampImage } from '../assets/stamp';
 
 declare global {
@@ -51,87 +50,106 @@ const FeedbackCard: React.FC<{ title: string, children: React.ReactNode, icon: R
 
 const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: InterviewDetails, reportRef: React.Ref<HTMLDivElement> }> = ({ feedbackData, interviewDetails, reportRef }) => {
     const isApproved = interviewDetails.decision === HiringDecision.Approved;
+    const scoreLabels = {
+        fluency: "Fluency & Confidence",
+        facialExpressions: "Facial Expressions",
+        bodyLanguage: "Body Language & Poise",
+        context: "Context & Credibility"
+    };
+
     return (
         <div ref={reportRef} className="absolute top-0 -left-[9999px]" style={{width: '210mm'}}>
-             <div className="p-12 bg-white text-black font-serif flex flex-col" style={{minHeight: '296mm'}}>
+             <div className="p-10 bg-white text-gray-800 font-sans flex flex-col" style={{minHeight: '297mm'}}>
                 {/* Header */}
-                <div className="flex justify-between items-center border-b-2 border-gray-400 pb-4 mb-8">
+                <div className="flex justify-between items-start border-b-4 border-indigo-700 pb-4 mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-800">Lyceum Academy</h1>
+                        <h1 className="text-4xl font-extrabold text-indigo-800">Lyceum Academy</h1>
                         <p className="text-sm text-gray-600">www.lyceumacad.com | +91 78930 78791</p>
                     </div>
-                    <h2 className="text-2xl font-semibold text-gray-700">Visa Feedback Report</h2>
+                    <div className="text-right">
+                        <h2 className="text-2xl font-bold text-gray-700">Mock Interview Report</h2>
+                        <p className="text-sm text-gray-500">Private & Confidential</p>
+                    </div>
                 </div>
 
                 <div className="grow">
                     {/* Candidate Info */}
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-6 text-lg border-b border-gray-300 pb-4">
-                        <p><strong>Applicant:</strong> {interviewDetails.name}</p>
-                        <p><strong>Visa Type:</strong> {interviewDetails.course}</p>
-                        {/* FIX: Changed "Date" to "Interview Scheduled Date" for clarity. */}
-                        <p><strong>Interview Scheduled Date:</strong> {interviewDetails.date}</p>
-                        <p><strong>Assessment ID:</strong> {interviewDetails.id}</p>
-                        <p className={`font-bold ${isApproved ? 'text-green-700' : 'text-red-700'}`}><strong>Mock Decision:</strong> {interviewDetails.decision}</p>
+                    <div className="grid grid-cols-3 gap-x-6 gap-y-3 mb-6 text-base border-b border-gray-200 pb-6">
+                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Applicant:</strong> {interviewDetails.name}</p></div>
+                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Reference #:</strong> {interviewDetails.referenceNumber}</p></div>
+                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Session #:</strong> {interviewDetails.sessionNumber}</p></div>
+                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Visa Type:</strong> {interviewDetails.course}</p></div>
+                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Scheduled Date:</strong> {interviewDetails.date}</p></div>
+                        <div className="bg-indigo-50 p-3 rounded-lg"><p><strong>Assessment Time:</strong> {interviewDetails.time}</p></div>
+                        <div className={`col-span-3 font-bold p-3 rounded-lg text-center text-lg ${isApproved ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}><strong>Mock Decision:</strong> {interviewDetails.decision}</div>
                     </div>
 
                     {/* Overall Summary */}
-                    <div className="mb-6">
-                        <h3 className="text-2xl font-bold border-b-2 border-gray-300 pb-2 mb-3 text-gray-800">Overall Summary</h3>
-                        <p className="text-gray-700 text-justify">{feedbackData.overallSummary}</p>
+                    <div className="mb-8">
+                        <h3 className="text-xl font-bold text-indigo-800 border-b-2 border-indigo-200 pb-2 mb-3">Overall Summary</h3>
+                        <p className="text-gray-700 text-justify leading-relaxed">{feedbackData.overallSummary}</p>
                     </div>
                     
                     {/* Detailed Feedback */}
                     <div className="mb-6">
-                        <h3 className="text-2xl font-bold border-b-2 border-gray-300 pb-2 mb-3 text-gray-800">Detailed Question Analysis</h3>
+                        <h3 className="text-xl font-bold text-indigo-800 border-b-2 border-indigo-200 pb-2 mb-4">Detailed Question Analysis</h3>
                         {feedbackData.detailedFeedback.map((item, index) => (
-                            <div key={index} className="mb-4 break-inside-avoid">
-                                <h4 className="font-bold text-lg text-gray-900">{index + 1}. {item.question}</h4>
-                                <div className="pl-4 border-l-2 border-gray-200 ml-1">
-                                    <p className="text-gray-700"><strong>Strengths:</strong> {item.strengths}</p>
-                                    <p className="text-gray-700"><strong>Areas for Improvement:</strong> {item.areasForImprovement}</p>
-                                    <p className="text-gray-700"><strong>Suggestions:</strong> {item.suggestions}</p>
+                            <div key={index} className="mb-5 break-inside-avoid p-4 border border-gray-200 rounded-lg">
+                                <h4 className="font-bold text-lg text-gray-900 mb-3">{index + 1}. {item.question}</h4>
+                                
+                                <div className="grid grid-cols-4 gap-2 text-center mb-3 text-sm">
+                                    {Object.entries(scoreLabels).map(([key, label]) => (
+                                        <div key={key} className="bg-gray-100 p-2 rounded">
+                                            <div className="font-semibold text-gray-600">{label}</div>
+                                            <div className="text-2xl font-bold text-indigo-700">{item.scores[key as keyof ScoreParameters]}<span className="text-sm text-gray-500">/10</span></div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="text-sm leading-snug">
+                                    <p className="text-gray-700"><strong className="text-green-700">Strengths:</strong> {item.strengths}</p>
+                                    <p className="text-gray-700"><strong className="text-yellow-700">To Improve:</strong> {item.areasForImprovement}</p>
+                                    <p className="text-gray-700"><strong className="text-blue-700">Suggestions:</strong> {item.suggestions}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Conclusion */}
-                    <div className="mb-6">
-                        <h3 className="text-2xl font-bold border-b-2 border-gray-300 pb-2 mb-3 text-gray-800">Conclusion</h3>
-                        <p className="text-gray-700 text-justify">{feedbackData.conclusion}</p>
+                    <div className="mb-8">
+                        <h3 className="text-xl font-bold text-indigo-800 border-b-2 border-indigo-200 pb-2 mb-3">Conclusion</h3>
+                        <p className="text-gray-700 text-justify leading-relaxed">{feedbackData.conclusion}</p>
                     </div>
+                </div>
 
-                    {/* Terms and Conditions */}
-                    <div className="mt-6 pt-4 border-t border-gray-300 text-xs">
+                {/* Interviewer Details & Stamp */}
+                <div className="flex justify-between items-end mt-12 pt-4 text-sm text-gray-800">
+                     {/* Terms and Conditions */}
+                    <div className="text-xs w-2/3">
                         <h4 className="font-bold text-sm mb-2 text-gray-800">Terms & Conditions</h4>
-                        <div className="text-gray-700 space-y-1">
+                        <div className="text-gray-600 space-y-1">
                             <p className="font-semibold">3 TERMS FOR USA APPLICATIONS</p>
                             <p className="font-semibold pl-2">3.9 Mock Interview Terms</p>
                             <ul className="list-none pl-4">
                                 <li><strong>3.9.1</strong> Only one mock interview is allowed in a day.</li>
                                 <li><strong>3.9.2</strong> We reserve the right to capture your video for training and promotional purposes.</li>
                                 <li><strong>3.9.3</strong> We reserve the right to decline your request to attend the mock interview.</li>
-                                <li><strong>3.9.4</strong> The purpose of providing the facility is for the sole benefit of students; we will not be held responsible for any emotional or psychological damage.</li>
+                                <li><strong>3.9.4</strong> This facility is for the sole benefit of students; we are not responsible for any emotional or psychological damage.</li>
                             </ul>
                         </div>
                     </div>
+                    <div className="text-right">
+                        <img src={stampImage} alt="Academic Director Stamp" className="inline-block mb-2" style={{ width: '120px' }} />
+                        <p className="font-bold">Mohammed Omar,</p>
+                        <p>MBA, DHR</p>
+                        <p>Academic Director,</p>
+                        <p>Lyceum Academy</p>
+                    </div>
                 </div>
-
-                {/* Interviewer Details & Stamp */}
-                {/* FIX: Added official stamp and aligned details to the right for a more professional look. */}
-                <div className="mt-12 pt-4 text-sm text-gray-800 text-right">
-                    <img src={stampImage} alt="Academic Director Stamp" className="inline-block mb-2" style={{ width: '120px' }} />
-                    <p className="font-bold">Mohammed Omar,</p>
-                    <p>MBA, DHR</p>
-                    <p>Academic Director,</p>
-                    <p>Lyceum Academy</p>
-                </div>
-
 
                 {/* Footer */}
-                <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-400 mt-8">
+                <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-300 mt-6">
                     <p>Report generated by Lyceum Academy AI Interview Assessor</p>
-                    <p>www.lyceumacad.com | +91 78930 78791</p>
                 </div>
             </div>
         </div>
@@ -151,24 +169,25 @@ const FeedbackReport: React.FC<FeedbackReportProps> = ({ feedbackData, interview
       const pdf = new jsPDF('p', 'mm', 'a4');
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfPageHeight = pdf.internal.pageSize.getHeight();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
       
-      const totalPdfHeight = (canvasHeight * pdfWidth) / canvasWidth;
-
-      let heightLeft = totalPdfHeight;
+      const ratio = canvasWidth / pdfWidth;
+      const calculatedHeight = canvasHeight / ratio;
+      
+      let heightLeft = calculatedHeight;
       let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPdfHeight);
-      heightLeft -= pdfPageHeight;
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, calculatedHeight);
+      heightLeft -= pdfHeight;
 
       while (heightLeft > 0) {
-        position -= pdfPageHeight;
+        position = position - pdfHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalPdfHeight);
-        heightLeft -= pdfPageHeight;
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, calculatedHeight);
+        heightLeft -= pdfHeight;
       }
       
       pdf.save(`${interviewDetails.name}-feedback-report.pdf`);

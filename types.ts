@@ -18,6 +18,9 @@ export interface InterviewDetails {
     name: string;
     course: string; // Will represent visa type (e.g., F-1 Student, B-2 Visitor)
     date: string;
+    referenceNumber?: string;
+    sessionNumber?: number;
+    time?: string;
     decision?: HiringDecision;
 }
 

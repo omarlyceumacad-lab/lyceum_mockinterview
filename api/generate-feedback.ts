@@ -15,6 +15,9 @@ interface InterviewDetails {
     name: string;
     course: string;
     date: string;
+    referenceNumber?: string;
+    sessionNumber?: number;
+    time?: string;
     decision?: HiringDecision;
 }
 
@@ -46,6 +49,9 @@ const feedbackSchema = {
                 name: { type: Type.STRING },
                 course: { type: Type.STRING },
                 date: { type: Type.STRING },
+                referenceNumber: { type: Type.STRING },
+                sessionNumber: { type: Type.NUMBER },
+                time: { type: Type.STRING },
                 decision: { type: Type.STRING },
              }
         },
@@ -106,6 +112,8 @@ Scores:
 
     Applicant Details:
     - Applicant Name: ${details.name}
+    - Reference Number: ${details.referenceNumber}
+    - Session Number: ${details.sessionNumber}
     - Visa Type Applied For: ${details.course}
     - Interview Date: ${details.date}
     - Assessment ID: ${details.id}
