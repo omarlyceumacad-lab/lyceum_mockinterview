@@ -1,6 +1,8 @@
 
 import React, { useRef } from 'react';
 import { FeedbackData, ScoreParameters, InterviewDetails, HiringDecision } from '../types';
+// FIX: Import stamp image to be used in the printable report.
+import { stampImage } from '../assets/stamp';
 
 declare global {
   interface Window {
@@ -66,7 +68,8 @@ const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: 
                     <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-6 text-lg border-b border-gray-300 pb-4">
                         <p><strong>Applicant:</strong> {interviewDetails.name}</p>
                         <p><strong>Visa Type:</strong> {interviewDetails.course}</p>
-                        <p><strong>Date:</strong> {interviewDetails.date}</p>
+                        {/* FIX: Changed "Date" to "Interview Scheduled Date" for clarity. */}
+                        <p><strong>Interview Scheduled Date:</strong> {interviewDetails.date}</p>
                         <p><strong>Assessment ID:</strong> {interviewDetails.id}</p>
                         <p className={`font-bold ${isApproved ? 'text-green-700' : 'text-red-700'}`}><strong>Mock Decision:</strong> {interviewDetails.decision}</p>
                     </div>
@@ -114,13 +117,16 @@ const PrintableReport: React.FC<{ feedbackData: FeedbackData; interviewDetails: 
                     </div>
                 </div>
 
-                {/* Interviewer Details */}
-                <div className="mt-12 pt-4 text-sm text-gray-800">
+                {/* Interviewer Details & Stamp */}
+                {/* FIX: Added official stamp and aligned details to the right for a more professional look. */}
+                <div className="mt-12 pt-4 text-sm text-gray-800 text-right">
+                    <img src={stampImage} alt="Academic Director Stamp" className="inline-block mb-2" style={{ width: '120px' }} />
                     <p className="font-bold">Mohammed Omar,</p>
                     <p>MBA, DHR</p>
                     <p>Academic Director,</p>
                     <p>Lyceum Academy</p>
                 </div>
+
 
                 {/* Footer */}
                 <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-400 mt-8">
